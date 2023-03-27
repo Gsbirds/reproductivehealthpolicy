@@ -4,6 +4,7 @@ from django.http import JsonResponse
 import json
 from .encoder import AbortionDataListEncoder,  AbortionDataDetailEncoder
 from .models import AbortionData
+from .acls import getAbortionData
 # # Create your views here.
 @require_http_methods(["GET", "POST"])
 def show_data(request):
@@ -19,19 +20,25 @@ def show_data(request):
         content = json.loads(request.body)
 
         # content["Abortion_Data"] = getAbortionData('California')
-        abortion_data = AbortionData.objects.create(**content)
-        return JsonResponse(
-            abortion_data,
-            encoder=AbortionDataListEncoder,
-            safe=False,
+    # state=AbortionData.objects.get(state=content["state"])
+
+    abortion_data = AbortionData.objects.create(**content)
+    return JsonResponse(
+        abortion_data,
+        encoder=AbortionDataListEncoder,
+        safe=False,
         )
     
 @require_http_methods(["GET", "DELETE", "PUT"])
 def show_data_details(request, id):
     if request.method == "GET":
-        news = AbortionData.objects.get(id=id)
+        abortion = AbortionData.objects.get(id=id)
+        data = getAbortionData(abortion.state)
+        
         return JsonResponse(
-            news, encoder=AbortionDataDetailEncoder, safe=False
+            {"abortion":abortion, "data":data}, 
+            encoder=AbortionDataDetailEncoder, 
+            safe=False
         )
     elif request.method == "DELETE":
         count, _ = AbortionData.objects.filter(id=id).delete()

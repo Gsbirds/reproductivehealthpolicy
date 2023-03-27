@@ -1,19 +1,23 @@
 import requests
 from .keys import ABORTION_API_KEY
 import json
+from .models import AbortionData
+
 
 def getAbortionData(state):
-    headers = {"Authorization": ABORTION_API_KEY}
+    headers = {"token": ABORTION_API_KEY}
+
     params = {
-        "per_page": 1,
-        "query":state,
+        "state_name": state,
     }
 
-    url = "https://api.abortionpolicyapi.com/v1/waiting_periods/"
+    url = "https://api.abortionpolicyapi.com/v1/gestational_limits/states/"
 
     response = requests.get(url, params=params, headers=headers)
+    # content=response.json()
     content = json.loads(response.content)
+
     try:
-        return {"Abortion_Data": content["photos"][0]["src"]["original"]}
+        return {"policy": content[state]}
     except (KeyError, IndexError):
-        return {"picture_url": None}
+        return {"policy": None}
